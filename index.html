@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta charset="utf-8">
+		<style>
+			video 
+			{
+				width : 320px;
+				height : 240px;
+				border : 1px solid black;
+			}
+			div
+			{
+				display: inline-block;
+			}
+		</style>
+	</head>
+	<body>
+		<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+		<script type="text/javascript">
+			var myVideoStream, myVideo;
+
+			window.onload = function()
+			{
+				myVideo = document.getElementById("myVideo");
+
+				getMedia();
+			}
+
+			function getMedia()
+			{
+				navigator.mediaDevices.getUserMedia({"audio" : true, "video" : true}).then(gotUserMedia).catch(didntGetUserMedia);
+			}
+
+			function gotUserMedia(stream)
+			{
+				myVideoStream = stream;
+
+				myVideo.srcObject = myVideoStream;
+			}
+
+			function didntGetUserMedia()
+			{
+				console.log("couldn't get video");
+			}
+		</script>
+
+		<div id="setup">
+			<p>WebRTC Book Demo (local media only)</p>
+		</div>
+
+		<br/>
+
+		<div style="width:30%;vertical-align:top">
+			<div>
+				<video id="myVideo" autoplay="autoplay" constrols muted="true" />
+			</div>
+		</div>
+
+	</body>
+</html>
