@@ -86,7 +86,7 @@ var createSignalingChannel = function(key, handlers)
 				return delay;
 			}
 
-			return {reset : reset, increase : increase, value : value};
+			return {"reset" : reset, "increase" : increase, "value" : value};
 		}());
 
 		(function getLoop()
@@ -192,7 +192,7 @@ var createSignalingChannel = function(key, handlers)
 
 	return 
 	{
-		connect : connect,
-		send : send
+		"connect" : connect,
+		"send" : send
 	};
 };
