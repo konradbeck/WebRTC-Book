@@ -17,15 +17,77 @@
 		</style>
 	</head>
 	<body>
-		<script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+		<script></script>
+		<script src="https://webrtc.github.io/adapter/adapter-latest.js" type="text/javascript"></script>
+		<script src="clientXHRSignalingChannel.js" type="text/javascript"></script>
 		<script type="text/javascript">
-			var myVideoStream, myVideo;
+			var signalingChannel, key, id, haveLocalMedia = false, connected = false, videoStream, videoE;
 
 			window.onload = function()
 			{
-				myVideo = document.getElementById("myVideo");
+				if (typeof queryparams !== "undefined" && queryparams && queryparams["key"])
+				{
+					document.getElementById("key").value = queryparams['key'];
+					connect();
+				}
+
+				videoE = document.getElementById("video");
 
 				getMedia();
+			}
+
+			function connnect()
+			{
+				var errorCB, scHandlers, handleMsg;
+
+				key = document.getElementById("key").value;
+
+				handleMsg = function(msg)
+				{
+					var msgE = document.getElementById("inmessages");
+					var msgString = JSON.stringify(msg);
+					msgE.value = msgString + "\n" + msgE.value;
+				};
+
+				scHandlers =
+				{
+					"onWaiting" : function()
+					{
+						setStatus("Waiting");
+					},
+					"onConnected" : function()
+					{
+						connected = true;
+						setStatus("Connected");
+						verifySetupDone();
+					},
+					"onMessage" : handleMsg
+				};
+
+				signalingChannel = createSignalingChannel(key, scHandlers);
+				errorCB = function(msg)
+				{
+					document.getElementById("response").innerHTML = msg;
+				};
+
+				signalingChannel.connect(errorCB);
+			}
+
+			function send(msg)
+			{
+				var handler = function(res)
+				{
+					document.getElementById("response").innerHTML = res;
+					return;
+				}
+
+				msg = msg || document.getElementById("message").value;
+
+				msgE = document.getElementById("outmessages");
+				var msgString = JSON.stringify(msg);
+				msgE.value = msgString + "\n" + msgE.value;
+
+				signalingChannel.send(msg, handler);
 			}
 
 			function getMedia()
@@ -35,27 +97,95 @@
 
 			function gotUserMedia(stream)
 			{
-				myVideoStream = stream;
+				videoStream = stream;
+				haveLocalMedia = true;
 
-				myVideo.srcObject = myVideoStream;
+				videoE.srcObject = videoStream;
+
+				verifySetupDone();
 			}
 
 			function didntGetUserMedia()
 			{
 				console.log("couldn't get video");
 			}
+
+			function verifySetupDone()
+			{
+				if(connected && haveLocalMedia)
+				{
+					setStatus("Set up");
+				}
+			}
+
+			function setStatus(str)
+			{
+				var statusLineE = document.getElementById("statusline"),
+					statusE = document.getElementById("status"),
+					sendE = document.getElementById("send"),
+					connectE = document.getElementById("connect"),
+					scMessageE = document.getElementById("scMessage");
+
+				switch(str)
+				{
+					case "Waiting" :
+						statuslineE.style.display = "inline";
+						stateE.innerHTML = "Waiting for peer signaling connection";
+						sendE.style.display = "none";
+						break;
+					case "Connected" :
+						statuslineE.style.display = "inline";
+						statusE.innerHTML = "Peer signaling connected, waiting for local media";
+						sendE.style.display = "inline";
+						scMessageE.style.display = "inline-block";
+						break;
+					case "Set up" :
+						statusE.innerHTML = "Peer signaling connected and local media obtained";
+						break;
+					default:
+				}
+			}
 		</script>
 
 		<div id="setup">
 			<p>WebRTC Book Demo (local media only)</p>
+			<p>Key:
+				<input type="text" name="key" id="key" onkeyup="if(event.keyCode == 13) { connect(); return false; }"/>
+				<button id="connect" onclick="connect()">Connect</button>
+				<span id="statusline" style="display:none">Status:
+					<span id="status">Disconnected</span>
+				</span>
+			</p>
+		</div>
+
+		<div id="scMessage" style="float:right;display:none">
+			<p>Signaling channel message:
+				<input type="text" width="100%" name="message" id="message" onkeyup="if(event.keyCode == 13) { send(); return false; }">
+				<button id="send" style="display:none" onclick="send()">Send</button>
+			</p>
+			<p>Response: <span id="response"></span></p>
 		</div>
 
 		<br/>
 
 		<div style="width:30%;vertical-align:top">
 			<div>
-				<video id="myVideo" autoplay="autoplay" constrols muted="true" />
+				<video id="video" autoplay="autoplay" constrols muted="true" />
 			</div>
+			<p><b>Outgoing Messages</b>
+				<br/>
+				<textarea id="outmessages" rows="100" style="width:100%"></textarea>
+			</p>
+		</div>
+
+		<div style="width:30%;vertical-align:top">
+			<div>
+				<video id="placeholder" autoplay="autoplay" controls/>
+			</div>
+			<p><b>Incoming Messages</b>
+				<br/>
+				<textarea id="inmessages" rows="100" style="widht:100%"></textarea>
+			</p>
 		</div>
 
 	</body>

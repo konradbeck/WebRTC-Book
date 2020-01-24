@@ -104,7 +104,7 @@ var createSignalingChannel = function(key, handlers)
 				if (msgs.length > 0)
 				{
 					pollWaitDelay.reset();
-					for (int i = 0; i < msgs.length; i += 1)
+					for (var i = 0; i < msgs.length; i += 1)
 					{
 						handleMessage(msgs[i]);
 					}
@@ -190,8 +190,7 @@ var createSignalingChannel = function(key, handlers)
 		client.send(JSON.stringify(sendData));
 	}
 
-	return 
-	{
+	return {
 		"connect" : connect,
 		"send" : send
 	};

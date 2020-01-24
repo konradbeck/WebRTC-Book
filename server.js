@@ -144,7 +144,7 @@ function contentType(filepath)
 			case "css": return ("text/css");
 			case "txt": return ("text/plain");
 			default: return ("text/html");
-		} 
+		}
 	}
 	return ("text/html");
 }
@@ -153,8 +153,7 @@ function addQuery(str, q)
 {
 	if (q)
 	{
-		return str.replace("<script></script>",
-			"<script>var queryparams = " + JSON.stringify(q) + ";</script>");
+		return str.replace("<script></script>",	"<script>var queryparams = " + JSON.stringify(q) + ";</script>");
 	} else
 	{
 		return str;
