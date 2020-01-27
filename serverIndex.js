@@ -19,4 +19,4 @@ handle["/send"] = requestHandlers.send;
 handle["/get"] = requestHandlers.get;
 
 server.serveFilePath("static");
-server.start(handle, port)
+server.start(handle, port);
